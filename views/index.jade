@@ -1,0 +1,153 @@
+extends layout
+
+prepend scripts
+    script(src="/socket.io/socket.io.js")
+
+
+prepend content
+    .navbar.navbar-fixed-top
+        .navbar-inner
+            .container-fluid
+                p.navbar-text.name.pull-left#playerName Name
+                ul.nav.pull-right
+                    li.dropdown
+                        a.dropdown-toggle(href="#") 
+                            span#playerScore Score
+                            b.caret
+                        ul.dropdown-menu#scores
+                            each player in game.players
+                                li #{player.name} -> #{player.score}
+    .container-fluid
+        .row
+            ul.thumbnails
+                li.span4
+                    .thumbnail.bcard= game.bcard.text
+                li.span3
+                    .thumbnail.wcard 
+                        span#czarName Czar
+                        p
+                            span.badge#playersCount= game.players.length 
+                            |  players
+                        p
+                            span.badge.badge-success#entriesCount= game.entries.length
+                            |  entries
+                        a.btn.btn-primary#endRound(href="#") End Round
+                        a.btn(href="#") Poke Czar
+        .alert.alert-info#feedback THIS IS THE INITIAL ALERT
+            button.close(data-dismiss="alert") ×
+        .entries
+            ul.thumbnails#entries
+        .hand
+            ul.thumbnails#hand
+
+    script
+        var socket = io.connect('http://localhost');
+
+        var pickEntry = function(item){
+            socket.emit('entry', $(item).html(), function(error){
+                if(error) $('#feedback').html(error).show();
+                else $(item).addClass("submitted")
+                // Remove the item
+                // Add new card
+            })
+        }
+
+        var voteEntry = function(item){
+            socket.emit('vote', $(item).html(), function(error){
+                if(error) $('#feedback').html(error).show();
+                else $(item).addClass("submitted")
+                // Remove the item
+                // Add new card
+            })
+        }
+
+        $("#endRound").click(function(){
+            console.log("Click", socket)
+            // Change the state of the game
+            socket.emit("state", "vote")
+        })
+
+        $("#playerName").click(function(){
+            // Change the person's name
+            console.log("Player name click")
+            socket.emit('name', prompt("Enter Your Name:", ""))
+        })
+
+        // Get the user's player info
+        socket.on('player', function(user){
+            console.log("Player ", user)
+            var playerName = (user.name != "") ? user.name : user.id
+            $("#playerName").html(playerName)
+            $("#hand").html("")
+            for (index in user.hand){
+                $("#hand").append(
+                    $("<li class='span3'>").append(
+                        $("<div class='thumbnail wcard'>").append(user.hand[index]).click(function(){pickEntry(this)})
+                    )
+                )
+            }
+        })
+
+        // This function will receive all game updates
+        socket.on('game', function(data){
+            console.log("Game ", data)
+            // entries
+            var entries = data.entries
+            if(entries != null) $("#entries").html("")
+            for (index in entries){
+                $("#entries").append(
+                    $("<li class='span3'>").append(
+                        $("<div class='thumbnail wcard'>").append(entries[index].text).click(function(){voteEntry(this)})
+                    )
+                )
+            }
+
+            // players
+            var players = data.players
+            if(players != null) $("#scores").html("")
+            for (index in players){
+                var player = players[index]
+                var playerName = (player.name != "") ? player.name : player.id
+
+                // For my player info
+                if(player.id == socket.socket.sessionid){
+                    $("#playerName").html(playerName)
+                    $("#playerScore").html(playerName + " -> " + player.score)
+
+                    if(player.hand){
+                        $("#hand").html("")
+                        for (index in player.hand){
+                            $("#hand").append(
+                                $("<li class='span3'>").append(
+                                    $("<div class='thumbnail wcard'>").append(player.hand[index]).click(function(){pickEntry(this)})
+                                )
+                            )
+                        }
+                    }
+                } 
+                if(player.id == data.czar) $("#czarName").html(playerName)
+                $("#scores").append(
+                    $("<li>").append(playerName + " -> " + player.score)
+                )
+            }
+
+            if(entries != null) $('#entriesCount').html(data.entries.length)
+            if(players != null) $('#playersCount').html(data.players.length)
+
+            // state
+            if(data.state != null){
+                if(data.state == "entry"){
+                    var help = (data.czar == socket.socket.sessionid) ? "You are the Card Czar, you choose when to end the round" : "Pick the best white card to match the category."
+                    $("#feedback").html(help)
+                    $("#hand").show()
+                    $("#entries").hide()
+                }
+                if(data.state == "vote"){
+                    console.log(data.czar, socket.socket.sessionid)
+                    var help = (data.czar == socket.socket.sessionid) ? "You are the Card Czar, pick your favorite entry." : "Wait for the Card Czar to choose their favorite."
+                    $("#feedback").html(help)
+                    $("#hand").hide()
+                    $("#entries").show()
+                }
+            }
+        })
