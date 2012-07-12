@@ -36,25 +36,23 @@ var init = function(cb){
 	
 }
 
-var nextPlayer = function(player){
-
-}
-
-var newRound = function(){
+newRound = function(callback){
 	console.log("game.newRound")
     // Remove the current entries from the players
     for(index in game.players){
         var player = game.players[index]
-        player.hand = _.difference(player.hand, game.entries)
-        while(player.hand.length < game.handCount) player.hand.push(wcards.shift() || "END OF STACK")
+        player.hand = _.difference( player.hand, game.entries )
+        while(player.hand.length < game.handCount) player.hand = player.hand.push(wcards.shift() || "END OF STACK")
+
+        game.players[index] = player
     }
     // Find the next czar
     var czar = _.find(game.players, function(player){
         return player.id == game.czar
     })
     var czarIndex = _.indexOf(game.players, czar)
-    game.czar = (czarIndex + 1 < game.players.length) ? game.players[czarIndex + 1] : game.players[0];
-
+    var nextCzar = (czarIndex + 1 < game.players.length) ? game.players[czarIndex + 1] : game.players[0];
+    game.czar = (nextCzar) ? nextCzar.id : null
 	
     // Pull the black card
 	var text = bcards.shift()
@@ -103,48 +101,8 @@ exports.leave = function(id){
 
 }
 
-exports.setName = function(id, name){
-    var p = _.find(game.players, function(player){ return player.id == id })
-    p.name = name
-}
-
-exports.addEntry = function(entry, cb){
-    // Don't let czar vote
-    if(entry.id == game.czar) return cb("You are the Czar");
-    if(game.state != "entry") return cb("Not accepting entries");
-	
-    // Only 1 entry?
-    if(_.any(game.entries, function(entryItem){ return entryItem.id == entry.id })){
-        return cb("You have already submitted an entry.")
-    }
-    else{
-        game.entries.push(entry)
-        // Remove the player's white card
-        // Give player a new white card
-        return cb(null)
-    }
-}
-
 exports.getEntries = function(){
     return game.entries
-}
-
-exports.vote = function(id, vote, cb){
-    // Don't let czar vote
-    if(vote.id == game.czar) return cb("You are not the Czar");
-    if(game.state != "vote") return cb("Not accepting votes");
-    
-    // Set the winner
-    var winner = _.find(game.players, function(player){
-        return _.contains(player.hand, vote)
-    })
-    winner.score++
-    game.winner = winner
-    // Start new round
-    newRound()
-    // Hand out new white cards
-    // Get next black card
-    cb(false)
 }
 
 exports.getGame = function(){ return game }
@@ -174,12 +132,21 @@ exports.getScoreboard = function(){
 
 }
 
+exports.setName = function(id, name){
+    var p = _.find(game.players, function(player){ return player.id == id })
+    p.name = name
+}
+
 exports.setState = function(id, state, cb){
     // Only czar may change state
-    if(game.czar != id) return cb(false)
+    if(game.czar != id) return cb("Only Czar may change state")
     
     // Only start new rounds when the last is done
-    if(game.state != "result" && state == "entry") return cb(false)
+    if(game.state != "result" && state == "entry") return cb("Only start new rounds when the last is done")
+
+    // Only end the entry round when there are entries
+    if(game.state == "entry" && state == "vote" && game.entries.length == 0) return cb("Must have at least one entry")
+
     // entry, vote, result
     game.state = state
     if(state=="entry"){ // New round
@@ -195,7 +162,37 @@ exports.setState = function(id, state, cb){
         game.help = "The round has ended.  Click 'New Round' to begin."
     else
         game.help = "";
-    return cb(true)
+    return cb(null, { state: game.state, czar: game.czar })
+}
+
+exports.addEntry = function(id, entry, cb){
+    // Don't let czar vote
+    if(id == game.czar) return cb("You are the Czar");
+    if(game.state != "entry") return cb("Not accepting entries");
+    
+    // Only 1 entry?
+    var player = _.find(game.players, function(player){ return player.id == id })
+    game.entries = _.difference(game.entries, player.hand)
+    game.entries.push(entry)
+    return cb(null, { entries: game.entries, state: game.state })
+}
+
+exports.setVote = function(id, vote, cb){
+    // Don't let czar vote
+    if(vote.id == game.czar) return cb("You are not the Czar");
+    if(game.state != "vote") return cb("Not accepting votes");
+    
+    // Set the winner
+    var winner = _.find(game.players, function(player){
+        return _.contains(player.hand, vote)
+    })
+    winner.score++
+    game.winner = winner
+    // Start new round
+    newRound()
+    cb(null, game)
+    // Hand out new white cards
+    // Get next black card
 }
 
 init()

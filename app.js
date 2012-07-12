@@ -53,42 +53,38 @@ io.sockets.on('connection', function (socket) {
     console.log("Disconnect: ", socket)
   })
   
-  // Entry
-  socket.on('entry', function(data, cb){
-    // add the entry
-    console.log("Entry, ", data)
-    game.addEntry({id:socket.id, text:data}, function(err){
-      if (err) { cb(err) }
-      else{
-        io.sockets.emit("game", { state: game.getState(), entries:game.getEntries() } )
-        cb(null)
-      }
-    })
-  })
-  
   socket.on('name', function(data){
     game.setName(socket.id, data)
     io.sockets.emit('game', { czar: game.getCzar(), players: game.getPlayers() })
   })
 
-  // State
-  socket.on('state', function(data, cb){
+  // Entry
+  socket.on('entry', function(entry, cb){
     // add the entry
-    console.log("State, ", data)
-    game.setState(socket.id, data, function(result){
-      if(result) io.sockets.emit("game", { state: game.getState(), czar: game.getCzar() })
+    console.log("Entry, ", entry)
+    game.addEntry(socket.id, entry, function(err, res){
+      if (err) { socket.emit("alert", err) }
+      else{ io.sockets.emit("game", res ) }
     })
-      
   })
 
-  socket.on('vote', function(data, cb){
+  // State
+  socket.on('state', function(data){
+    // add the entry
+    console.log("State, ", data)
+    game.setState(socket.id, data, function(err, res){
+      if (err) { socket.emit("alert", err) }
+      else{ io.sockets.emit("game", res ) }
+    })
+  })
+
+  // Vote
+  socket.on('vote', function(data){
     console.log("Vote, ", data)
-    game.vote(socket.id, data, function(err){
-      if (err) { cb(err) }
-      else{
-        io.sockets.emit("game", game.getGame() )
-        cb(null)
-      }
+    game.setVote(socket.id, data, function(err, res){
+      console.log("setVote complete, ", err, res)
+      if (err) { socket.emit("alert", err) }
+      else{ io.sockets.emit("game", res ) }
     })
   })
 });

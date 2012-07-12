@@ -21,7 +21,7 @@ prepend content
         .row
             ul.thumbnails
                 li.span4
-                    .thumbnail.bcard= game.bcard.text
+                    .thumbnail.bcard#bcard= game.bcard.text
                 li.span3
                     .thumbnail.wcard 
                         span#czarName Czar
@@ -41,7 +41,7 @@ prepend content
             ul.thumbnails#hand
 
     script
-        var socket = io.connect('http://localhost');
+        var socket = io.connect('#');
 
         var pickEntry = function(item){
             socket.emit('entry', $(item).html(), function(error){
@@ -53,16 +53,11 @@ prepend content
         }
 
         var voteEntry = function(item){
-            socket.emit('vote', $(item).html(), function(error){
-                if(error) $('#feedback').html(error).show();
-                else $(item).addClass("submitted")
-                // Remove the item
-                // Add new card
-            })
+            console.log("voteEntry ", $(item).html())
+            socket.emit('vote', $(item).html())
         }
 
         $("#endRound").click(function(){
-            console.log("Click", socket)
             // Change the state of the game
             socket.emit("state", "vote")
         })
@@ -88,16 +83,25 @@ prepend content
             }
         })
 
+        socket.on('alert', function(data){
+            console.log("ALERT: ", data)
+        })
+
         // This function will receive all game updates
         socket.on('game', function(data){
             console.log("Game ", data)
+            // Black card
+            if(data.bcard){
+                $('#bcard').html(data.bcard.text)
+            }
+
             // entries
             var entries = data.entries
             if(entries != null) $("#entries").html("")
             for (index in entries){
                 $("#entries").append(
                     $("<li class='span3'>").append(
-                        $("<div class='thumbnail wcard'>").append(entries[index].text).click(function(){voteEntry(this)})
+                        $("<div class='thumbnail wcard'>").append(entries[index]).click(function(){voteEntry(this)})
                     )
                 )
             }
