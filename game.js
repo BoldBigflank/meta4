@@ -42,7 +42,7 @@ newRound = function(callback){
     for(index in game.players){
         var player = game.players[index]
         player.hand = _.difference( player.hand, game.entries )
-        while(player.hand.length < game.handCount) player.hand = player.hand.push(wcards.shift() || "END OF STACK")
+        while(player.hand.length < game.handCount) player.hand.push(wcards.shift() || "END OF STACK")
 
         game.players[index] = player
     }
