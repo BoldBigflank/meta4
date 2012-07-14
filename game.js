@@ -31,14 +31,11 @@ var init = function(cb){
 	    if(err) throw err;
 	    wcards = _.shuffle(data.toString().split("\n"));
 	});
-
-    newRound()
 	
 }
 
 newRound = function(callback){
-	console.log("game.newRound")
-    // Remove the current entries from the players
+	// Remove the current entries from the players
     for(index in game.players){
         var player = game.players[index]
         player.hand = _.difference( player.hand, game.entries )
@@ -63,20 +60,22 @@ newRound = function(callback){
 		text: text
 		, pick: pick
 	}
-	console.log(game.bcard)
-    game.entries = []
+	game.entries = []
     game.state = "entry"
 }
 
-exports.join = function(id, cb){
-	// Add a player, give them a hand
-	var player = {
-		id: id
-		, name: ""
-		, hand: wcards.splice(0,10)
-		, score: 0
-	}
-	game.players.push(player)
+exports.join = function(uuid, cb){
+    var player = _.find(game.players, function(player){ return player.id == uuid })
+    console.log(player)
+    if( typeof player === 'undefined'){
+        var player = {
+            id: uuid
+            , name: ""
+            , hand: wcards.splice(0,10)
+            , score: 0
+        }
+        game.players.push(player)
+    }
     // If we don't have a czar, they are the czar
     if(!game.czar) game.czar = player.id
     cb(player)
@@ -119,6 +118,8 @@ exports.getCzar = function(){ return game.czar }
 
 exports.getState = function(){ return game.state }
 
+exports.getBcard = function(){ return game.bcard }
+
 exports.getWinner = function(){ return game.winner }
 
 exports.getScoreboard = function(){
@@ -134,7 +135,7 @@ exports.getScoreboard = function(){
 
 exports.setName = function(id, name){
     var p = _.find(game.players, function(player){ return player.id == id })
-    p.name = name
+    if(p) p.name = name
 }
 
 exports.setState = function(id, state, cb){
@@ -174,7 +175,7 @@ exports.addEntry = function(id, entry, cb){
     var player = _.find(game.players, function(player){ return player.id == id })
     game.entries = _.difference(game.entries, player.hand)
     game.entries.push(entry)
-    return cb(null, { entries: game.entries, state: game.state })
+    return cb(null, { entries: game.entries, czar: game.czar, players: game.players, state: game.state })
 }
 
 exports.setVote = function(id, vote, cb){

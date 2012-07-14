@@ -15,24 +15,21 @@ prepend content
                             span#playerScore Score
                             b.caret
                         ul.dropdown-menu#scores
-                            each player in game.players
-                                li #{player.name} -> #{player.score}
     .container-fluid
         .row
             ul.thumbnails
                 li.span4
-                    .thumbnail.bcard#bcard= game.bcard.text
+                    .thumbnail.bcard#bcard
                 li.span3
                     .thumbnail.wcard 
                         span#czarName Czar
                         p
-                            span.badge#playersCount= game.players.length 
+                            span.badge#playersCount 0
                             |  players
                         p
-                            span.badge.badge-success#entriesCount= game.entries.length
+                            span.badge.badge-success#entriesCount 0
                             |  entries
-                        a.btn.btn-primary#endRound(href="#") End Round
-                        a.btn(href="#") Poke Czar
+                        a.btn#endRound(href="#") End Round
         .alert.alert-info#feedback THIS IS THE INITIAL ALERT
             button.close(data-dismiss="alert") ×
         .entries
@@ -41,8 +38,10 @@ prepend content
             ul.thumbnails#hand
 
     script
+        var uuid = #{uuid}
+        console.log("uuid: ", uuid)
         var socket = io.connect('#');
-
+        
         var pickEntry = function(item){
             socket.emit('entry', $(item).html(), function(error){
                 if(error) $('#feedback').html(error).show();
@@ -53,7 +52,6 @@ prepend content
         }
 
         var voteEntry = function(item){
-            console.log("voteEntry ", $(item).html())
             socket.emit('vote', $(item).html())
         }
 
@@ -64,7 +62,6 @@ prepend content
 
         $("#playerName").click(function(){
             // Change the person's name
-            console.log("Player name click")
             socket.emit('name', prompt("Enter Your Name:", ""))
         })
 
@@ -114,10 +111,12 @@ prepend content
                 var playerName = (player.name != "") ? player.name : player.id
 
                 // For my player info
-                if(player.id == socket.socket.sessionid){
+                if(player.id == uuid){
                     $("#playerName").html(playerName)
                     $("#playerScore").html(playerName + " -> " + player.score)
-
+                    if(player.id == data.czar) $('#endRound').show()
+                    else $('#endRound').hide()
+                    
                     if(player.hand){
                         $("#hand").html("")
                         for (index in player.hand){
@@ -135,23 +134,32 @@ prepend content
                 )
             }
 
+            
             if(entries != null) $('#entriesCount').html(data.entries.length)
             if(players != null) $('#playersCount').html(data.players.length)
 
+            if(entries && players){
+                if(entries.length >= players.length - 1 ) $('#endRound').addClass('btn-primary')
+                else $('#endRound').removeClass('btn-primary')
+            }
+            
             // state
             if(data.state != null){
                 if(data.state == "entry"){
-                    var help = (data.czar == socket.socket.sessionid) ? "You are the Card Czar, you choose when to end the round" : "Pick the best white card to match the category."
+                    var help = (data.czar == uuid) ? "You are the Card Czar, you choose when to end the round" : "Pick the best white card to match the category."
                     $("#feedback").html(help)
                     $("#hand").show()
                     $("#entries").hide()
                 }
                 if(data.state == "vote"){
-                    console.log(data.czar, socket.socket.sessionid)
-                    var help = (data.czar == socket.socket.sessionid) ? "You are the Card Czar, pick your favorite entry." : "Wait for the Card Czar to choose their favorite."
+                    var help = (data.czar == uuid) ? "You are the Card Czar, pick your favorite entry." : "Wait for the Card Czar to choose their favorite."
                     $("#feedback").html(help)
                     $("#hand").hide()
                     $("#entries").show()
                 }
             }
         })
+
+        // Join the game
+        socket.emit('join', uuid)
+        

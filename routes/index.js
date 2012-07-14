@@ -4,7 +4,7 @@
  */
 
 exports.index = function(req, res){
-  res.render('index', { title: 'Express' })
+  res.render('index', { title: 'Express', uuid: req.session.uuid })
 };
 
 exports.game = function(req, res){
