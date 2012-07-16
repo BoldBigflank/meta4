@@ -5,7 +5,7 @@ var game = {
     , handCount: 10
 	, state:"entry"
     , bcard:{
-        text:""
+        text:"INITIAL"
         , pick:1
     }
     , entries:[]
@@ -66,19 +66,19 @@ newRound = function(callback){
 
 exports.join = function(uuid, cb){
     var player = _.find(game.players, function(player){ return player.id == uuid })
-    console.log(player)
     if( typeof player === 'undefined'){
         var player = {
             id: uuid
-            , name: ""
+            , name: uuid
             , hand: wcards.splice(0,10)
             , score: 0
+            , status: 'active'
         }
         game.players.push(player)
     }
     // If we don't have a czar, they are the czar
     if(!game.czar) game.czar = player.id
-    cb(player)
+    cb()
 }
 
 exports.leave = function(id){

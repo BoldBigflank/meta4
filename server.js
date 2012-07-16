@@ -33,9 +33,8 @@ app.configure('production', function(){
 
 // Routes
 app.get('/', function (req, res) {
-  console.log(game.getGame())
   if (typeof req.session.uuid === 'undefined') req.session.uuid = Math.floor(Math.random()*10000001)
-  res.render(__dirname + '/views/index.jade', {title: "Cards Against Humanity", uuid: req.session.uuid});
+  res.render(__dirname + '/views/index.jade', {title: "Cards Against Humanity", uuid: req.session.uuid, game: game.getGame()});
 }); 
 //app.get('/', routes.index);
 app.get('/game', routes.game);
@@ -46,7 +45,7 @@ io.sockets.on('connection', function (socket) {
   
   socket.on('join', function(uuid){
     socket.set('uuid', uuid)
-    game.join(uuid, function(player){
+    game.join(uuid, function(){
       console.log("Game joined")
       io.sockets.emit('game', game.getGame() )
       //socket.emit("player", player)
