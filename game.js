@@ -65,6 +65,10 @@ newRound = function(callback){
 }
 
 exports.join = function(uuid, cb){
+    if(!uuid) {
+        cb("UUID not found")
+        return
+    }
     var player = _.find(game.players, function(player){ return player.id == uuid })
     if( typeof player === 'undefined'){
         var player = {
@@ -78,7 +82,7 @@ exports.join = function(uuid, cb){
     }
     // If we don't have a czar, they are the czar
     if(!game.czar) game.czar = player.id
-    cb()
+    cb(null, {players: game.players, czar: game.czar})
 }
 
 exports.leave = function(id){
@@ -133,9 +137,10 @@ exports.getScoreboard = function(){
 
 }
 
-exports.setName = function(id, name){
+exports.setName = function(id, name, cb){
     var p = _.find(game.players, function(player){ return player.id == id })
     if(p) p.name = name
+    cb(null, { players: game.players, czar: game.czar })
 }
 
 exports.setState = function(id, state, cb){
@@ -184,10 +189,15 @@ exports.setVote = function(id, vote, cb){
     if(game.state != "vote") return cb("Not accepting votes");
     
     // Set the winner
-    var winner = _.find(game.players, function(player){
+    var winningPlayer = _.find(game.players, function(player){
         return _.contains(player.hand, vote)
     })
-    winner.score++
+    winningPlayer.score++
+    var winner = {
+        name: winningPlayer.name
+        , bcard: game.bcard.text
+        , wcard: vote
+    }
     game.winner = winner
     // Start new round
     newRound()

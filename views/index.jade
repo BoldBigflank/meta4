@@ -37,6 +37,12 @@ prepend content
                             span.badge.badge-success#entriesCount(data.bind="text: entries().length") 0
                             |  entries
                         a.btn#endRound(href="#", data-bind="visible : czar() == #{uuid}, css : { 'btn-primary' : entries().length >= players().length - 1 }") End Round
+                li.span3
+                    .thumbnail.wcard
+                        p(data-bind="text: winner.bcard()")
+                        p(data-bind="text: winner.name()")
+                        p(data-bind="text: winner.wcard()")
+
         .alert.alert-error#alert(style="display: none") THIS IS THE INITIAL ALERT
             button.close(data-dismiss="alert") ×
         .alert.alert-info#feedback THIS IS THE INITIAL ALERT
@@ -95,15 +101,21 @@ prepend content
             clearInterval(alertInterval)
             alertInterval = setInterval(function(){$('#alert').hide()}, 4000)
         })
-
+        
+        socket.on('alert', function(data){
+            console.log("ALERT: ", data)
+            $('#alert').html(data).show()
+            clearInterval(alertInterval)
+            alertInterval = setInterval(function(){$('#alert').hide()}, 4000)
+        })
 
         // This function will receive all game updates
         socket.on('game', function(data){
             // Knockout Implementation
+            console.log("Game ", data)
             ko.mapping.fromJS(data, viewModel);
 
             // *** Old implementation
-            console.log("Game ", data)
             // Black card
             //- if(data.bcard){
             //-     $('#bcard').html(data.bcard.text)

@@ -45,10 +45,9 @@ io.sockets.on('connection', function (socket) {
   
   socket.on('join', function(uuid){
     socket.set('uuid', uuid)
-    game.join(uuid, function(){
-      console.log("Game joined")
-      io.sockets.emit('game', game.getGame() )
-      //socket.emit("player", player)
+    game.join(uuid, function(err, res){
+      if (err) { socket.emit("alert", err) }
+      else{ io.sockets.emit("game", res ) }
     })
   })
 
@@ -64,8 +63,11 @@ io.sockets.on('connection', function (socket) {
   
   socket.on('name', function(data){
     socket.get('uuid', function(err, uuid){
-      game.setName(uuid, data)
-      io.sockets.emit('game', { czar: game.getCzar(), players: game.getPlayers() })
+      game.setName(uuid, data, function(err, res){
+        if (err) { socket.emit("alert", err) }
+        else{ io.sockets.emit("game", res ) }
+      })
+      
     })
   })
 
@@ -101,7 +103,9 @@ io.sockets.on('connection', function (socket) {
       game.setVote(uuid, data, function(err, res){
         console.log("setVote complete, ", err, res)
         if (err) { socket.emit("alert", err) }
-        else{ io.sockets.emit("game", res ) }
+        else{ 
+          io.sockets.emit("game", res ) 
+        }
       })  
     })
   })
