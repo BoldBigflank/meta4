@@ -1,7 +1,17 @@
 Response
 	Say Hello
 	if state == 'entry'
-		Say Entry state
+		//- The previous winner
+		//- Instructions
+		each player in players
+			if player.id != czar
+				Say= player.name
+		Say Pick your favorite card from your hand.
+		Play https://dl.dropbox.com/u/7776712/raincloud.mp3
 	if state == 'vote'
-		Say Vote state
-	Play https://dl.dropbox.com/u/7776712/nyancatring.mp3
+		//- prod the czar by name
+		each players in players
+			if player.id == czar
+				Say !{player.name}, vote for the best entry.
+		Play https://dl.dropbox.com/u/7776712/blue_blood.mp3
+	Play(loop='0') https://dl.dropbox.com/u/7776712/nyancatring.mp3
