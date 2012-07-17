@@ -34,10 +34,13 @@ app.configure('production', function(){
 // Routes
 app.get('/', function (req, res) {
   if (typeof req.session.uuid === 'undefined') req.session.uuid = Math.floor(Math.random()*10000001)
-  res.render(__dirname + '/views/index.jade', {title: "Cards Against Humanity", uuid: req.session.uuid, game: game.getGame()});
+  res.render(__dirname + '/views/index.jade', {title: "Meta4", uuid: req.session.uuid, game: game.getGame()});
 }); 
 //app.get('/', routes.index);
-app.get('/game', routes.game);
+app.get('/game/:id', function(req, res){
+  if (typeof req.session.uuid === 'undefined') req.session.uuid = Math.floor(Math.random()*10000001)
+  res.render(__dirname + '/views/index.jade', {title: "Meta4", uuid: req.session.uuid, game: game.getGame(), room: req.params.id});
+});
 
 io.sockets.on('connection', function (socket) {
   console.log("Connection", socket.id)

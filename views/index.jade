@@ -3,6 +3,7 @@ extends layout
 prepend scripts
     script(src="/socket.io/socket.io.js")
     script(src="/js/underscore.js")
+    script(type="text/javascript", src="//static.twilio.com/libs/twiliojs/1.0/twilio.min.js")
 
 
 prepend content
@@ -20,6 +21,8 @@ prepend content
                                 span(data-bind="text: name")
                                 |  -> 
                                 span(data-bind="text: score")
+                ul.nav.pull-right
+                    a.btn#twilioCall Audio
 
     .container-fluid
         .row

@@ -19,6 +19,7 @@ var game = {
 
 var bcards = ["This is the first card, did you shuffle?"]
 var wcards = []
+var names = []
 
 
 var init = function(cb){
@@ -35,6 +36,13 @@ var init = function(cb){
 	    if(err) throw err;
 	    wcards = _.shuffle(data.toString().split("\n"));
 	});
+
+    fs.readFile('names.txt', function(err, data) {
+        if(err) throw err;
+        names = _.shuffle(data.toString().split("\n"));
+        // Shuffle
+        newRound()
+    });
 	
 }
 
@@ -77,7 +85,7 @@ exports.join = function(uuid, cb){
     if( typeof player === 'undefined'){
         var player = {
             id: uuid
-            , name: uuid
+            , name: names.shift() || uuid
             , hand: wcards.splice(0,10)
             , score: 0
             , status: 'active'
