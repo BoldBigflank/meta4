@@ -10,7 +10,11 @@ var game = {
     }
     , entries:[]
     , players:[]
-    , winner:{}
+    , winner:{
+        name:''
+        , wcard:''
+        , bcard:''
+    }
 } // entry, vote, result
 
 var bcards = ["This is the first card, did you shuffle?"]

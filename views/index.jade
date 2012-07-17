@@ -34,11 +34,11 @@ prepend content
                             span.badge#playersCount(data-bind="text: players().length") 0
                             |  players
                         p
-                            span.badge.badge-success#entriesCount(data.bind="text: entries().length") 0
+                            span.badge.badge-success#entriesCount(data-bind="text: entries().length") 0
                             |  entries
                         a.btn#endRound(href="#", data-bind="visible : czar() == #{uuid}, css : { 'btn-primary' : entries().length >= players().length - 1 }") End Round
                 li.span3
-                    .thumbnail.wcard
+                    .thumbnail.wcard(data-bind="visible: winner.bcard")
                         p(data-bind="text: winner.bcard()")
                         p(data-bind="text: winner.name()")
                         p(data-bind="text: winner.wcard()")
