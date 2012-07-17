@@ -36,6 +36,20 @@ app.get('/', function (req, res) {
   if (typeof req.session.uuid === 'undefined') req.session.uuid = Math.floor(Math.random()*10000001)
   res.render(__dirname + '/views/index.jade', {title: "Meta4", uuid: req.session.uuid, game: game.getGame()});
 }); 
+
+app.post('/twilio/voice', function(req, res){
+  // Rip the call id out
+  game.setHost(req.headers.host)
+  game.pushCall(req.body.CallSid)
+  res.render(__dirname + '/views/voice.jade', game.getGame())
+})
+
+app.post('/twilio/complete', function(req, res){
+  // Rip the call id out
+  game.deleteCall(req.body.CallSid)
+  res.send()
+})
+
 //app.get('/', routes.index);
 app.get('/game/:id', function(req, res){
   if (typeof req.session.uuid === 'undefined') req.session.uuid = Math.floor(Math.random()*10000001)

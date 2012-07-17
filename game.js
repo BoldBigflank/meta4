@@ -1,3 +1,5 @@
+var twilio = require('./twiliorest.js')
+
 var fs = require('fs');
 var _ = require('underscore')
 var game = {
@@ -16,11 +18,12 @@ var game = {
         , bcard:''
     }
 } // entry, vote, result
+var host = ""
+var calls = []
 
 var bcards = ["This is the first card, did you shuffle?"]
 var wcards = []
 var names = []
-
 
 var init = function(cb){
 	// read black cards, put into array
@@ -74,6 +77,7 @@ newRound = function(callback){
 	}
 	game.entries = []
     game.state = "entry"
+    for (x in calls) { twilio.updateCall(calls[x], 'http://' + host + '/twilio/voice') }
 }
 
 exports.join = function(uuid, cb){
@@ -149,6 +153,18 @@ exports.getScoreboard = function(){
 
 }
 
+exports.pushCall = function(callSid){
+    calls = _.union(calls, [callSid])
+    console.log(calls)
+}
+
+exports.deleteCall = function(callSid){
+    calls = _.without(calls, callSid)
+}
+
+exports.setHost = function(h){
+    host = h
+}
 exports.setName = function(id, name, cb){
     var p = _.find(game.players, function(player){ return player.id == id })
     if(p) p.name = name
@@ -167,6 +183,8 @@ exports.setState = function(id, state, cb){
 
     // entry, vote, result
     game.state = state
+    for (x in calls) { twilio.updateCall(calls[x], 'http://' + host + '/twilio/voice') }
+
     if(state=="entry"){ // New round
         // Set the state
         game.state = "entry"
