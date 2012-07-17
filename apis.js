@@ -47,7 +47,7 @@ exports.guardian = function(cb){
 	var things = []
 	fs.readFile(__dirname + '/public/txt/guardian.json', 'utf8', function(err, data) {
 		if(err) cb(err)
-		jsonData = JSON.parse(data)
+		var jsonData = JSON.parse(data)
         for (x in jsonData.response.results){
         	result = jsonData.response.results[x]
         	if(result.movie) things.push(result.movie.title)
@@ -67,7 +67,7 @@ exports.rovi = function(cb){
 	var things = []
 	fs.readFile(__dirname + '/public/txt/rovimovies.json', 'utf8', function(err, data) {
 		if(err) cb(err)
-		jsonData = JSON.parse(data)
+		var jsonData = JSON.parse(data)
         for (x in jsonData.searchResponse.results){
         	result = jsonData.searchResponse.results[x]
         	if(result.movie) things.push(result.movie.title)

@@ -22,7 +22,7 @@ prepend content
                                 |  -> 
                                 span(data-bind="text: score")
                 ul.nav.pull-right
-                    a.btn#twilioCall Audio
+                    a.btn#brag(data-bind='text: (winner.id() == "#{uuid}") ? "Brag" : "Invite"') Brag
 
     .container-fluid
         .row
@@ -99,6 +99,10 @@ prepend content
         $("#playerName").click(function(){
             // Change the person's name
             socket.emit('name', prompt("Enter Your Name:", ""))
+        })
+
+        $("#brag").click(function(){
+            socket.emit('email', prompt("Who would you like to notify?", ""))
         })
 
         socket.on('alert', function(data){

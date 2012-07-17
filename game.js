@@ -17,6 +17,7 @@ var game = {
         name:''
         , wcard:''
         , bcard:''
+        , id:''
     }
 } // entry, vote, result
 var host = ""
@@ -157,6 +158,8 @@ exports.getScores = function(){
 
 exports.getPlayers = function(){ return game.players }
 
+exports.getPlayer = function(uuid){ return _.find(game.players, function(player){ return player.id == uuid })}
+
 exports.getEntries = function(){ return game.entries }
 
 exports.getCzar = function(){ return game.czar }
@@ -180,7 +183,6 @@ exports.getScoreboard = function(){
 
 exports.pushCall = function(callSid){
     calls = _.union(calls, [callSid])
-    console.log(calls)
 }
 
 exports.deleteCall = function(callSid){
@@ -252,6 +254,7 @@ exports.setVote = function(id, vote, cb){
         name: winningPlayer.name
         , bcard: game.bcard.text
         , wcard: vote
+        , id: winningPlayer.id
     }
     game.winner = winner
     // Start new round

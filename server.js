@@ -5,6 +5,7 @@
 
 var express = require('express')
   , routes = require('./routes')
+  , email = require('./mail.js')
   , game = require('./game.js')
   , app = module.exports = express.createServer()
   , io = require('socket.io').listen(app)
@@ -91,7 +92,6 @@ io.sockets.on('connection', function (socket) {
   // Entry
   socket.on('entry', function(entry, cb){
     // add the entry
-    console.log("Entry, ", entry)
     socket.get('uuid', function(err, uuid){
       game.addEntry(uuid, entry, function(err, res){
         if (err) { socket.emit("alert", err) }
@@ -104,7 +104,6 @@ io.sockets.on('connection', function (socket) {
   // State
   socket.on('state', function(data){
     // add the entry
-    console.log("State, ", data)
     socket.get('uuid', function(err, uuid){
       game.setState(uuid, data, function(err, res){
         if (err) { socket.emit("alert", err) }
@@ -115,10 +114,8 @@ io.sockets.on('connection', function (socket) {
 
   // Vote
   socket.on('vote', function(data){
-    console.log("Vote, ", data)
     socket.get('uuid', function(err, uuid){
       game.setVote(uuid, data, function(err, res){
-        console.log("setVote complete, ", err, res)
         if (err) { socket.emit("alert", err) }
         else{ 
           io.sockets.emit("game", res ) 
@@ -126,6 +123,20 @@ io.sockets.on('connection', function (socket) {
       })  
     })
   })
+
+  socket.on('email', function(data){
+    var winner = game.getWinner
+    socket.get('uuid', function(err, uuid){
+      var message = "Greetings from Meta4,\n  "
+      var player = game.getPlayer(uuid) || {}
+      var winner = game.getWinner() || {}
+      if(player.id == winner.id)
+        message += player.name + " just won a round of Meta4.  To describe '" + winner.bcard + "', " + player.name + " used the card '" + winner.wcard + "'.  "
+      message += "Join " + player.name + " at http://meta4.azurewebsite.net"
+      email.brag(data, player.name, message)
+    })
+  })
+
 });
 
 var port = process.env.PORT || 3000
