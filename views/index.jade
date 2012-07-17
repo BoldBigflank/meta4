@@ -43,10 +43,12 @@ prepend content
                         p(data-bind="text: winner.name()")
                         p(data-bind="text: winner.wcard()")
 
-        .alert.alert-error#alert(style="display: none") THIS IS THE INITIAL ALERT
+        .alert.alert-error#alert(style="display: none") CRISIS ALERT
             button.close(data-dismiss="alert") ×
-        .alert.alert-info#feedback THIS IS THE INITIAL ALERT
-            button.close(data-dismiss="alert") ×
+        .alert.alert-info#feedback
+            span(data-bind="visible: state() == 'entry'") Entry round.  
+            span(data-bind="visible: state() == 'vote'") Voting round.  
+            span(data-bind="visible: czar() == uuid") You are the Czar.
         .entries(data-bind="visible: state() == 'vote'")
             ul.thumbnails#entries(data-bind="foreach: entries")
                 li(class="span3")
@@ -61,18 +63,20 @@ prepend content
         var uuid = #{uuid}
         var socket = io.connect('#');
         var alertInterval
-        console.log("uuid: ", uuid)
         var viewModel = ko.mapping.fromJS(!{JSON.stringify(game)});
+
         viewModel.player = ko.computed( function(){
             return _.find( viewModel.players(), function(player){
                  return player.id() == uuid 
              }) || {}
         })
+
         viewModel.czarObject = ko.computed( function(){
             return _.find( viewModel.players(), function(player){
                  return player.id() == viewModel.czar()
              }) || {}
         })
+
         viewModel.addEntry = function(item){
             console.log("addEntry " , item)
             socket.emit('entry', item)
@@ -83,7 +87,6 @@ prepend content
         }
 
         ko.applyBindings(viewModel);
-        
         
         $("#endRound").click(function(){
             // Change the state of the game
@@ -102,91 +105,11 @@ prepend content
             alertInterval = setInterval(function(){$('#alert').hide()}, 4000)
         })
         
-        socket.on('alert', function(data){
-            console.log("ALERT: ", data)
-            $('#alert').html(data).show()
-            clearInterval(alertInterval)
-            alertInterval = setInterval(function(){$('#alert').hide()}, 4000)
-        })
-
         // This function will receive all game updates
         socket.on('game', function(data){
             // Knockout Implementation
             console.log("Game ", data)
             ko.mapping.fromJS(data, viewModel);
-
-            // *** Old implementation
-            // Black card
-            //- if(data.bcard){
-            //-     $('#bcard').html(data.bcard.text)
-            //- }
-
-            //- // entries
-            //- var entries = data.entries
-            //- if(entries != null) $("#entries").html("")
-            //- for (index in entries){
-            //-     $("#entries").append(
-            //-         $("<li class='span3'>").append(
-            //-             $("<div class='thumbnail wcard'>").append(entries[index]).click(function(){addVote(this)})
-            //-         )
-            //-     )
-            //- }
-
-            //- // players
-            //- var players = data.players
-            //- if(players != null) $("#scores").html("")
-            //- for (index in players){
-            //-     var player = players[index]
-            //-     var playerName = (player.name != "") ? player.name : player.id
-
-            //-     // For my player info
-            //-     if(player.id == uuid){
-            //-         $("#playerName").html(playerName)
-            //-         $("#playerScore").html(playerName + " -> " + player.score)
-            //-         if(player.id == data.czar) $('#endRound').show()
-            //-         else $('#endRound').hide()
-                    
-            //-         if(player.hand){
-            //-             $("#hand").html("")
-            //-             for (index in player.hand){
-            //-                 $("#hand").append(
-            //-                     $("<li class='span3'>").append(
-            //-                         $("<div class='thumbnail wcard'>").append(player.hand[index]).click(function(){addEntry(this)})
-            //-                     )
-            //-                 )
-            //-             }
-            //-         }
-            //-     } 
-            //-     if(player.id == data.czar) $("#czarName").html(playerName)
-            //-     $("#scores").append(
-            //-         $("<li>").append(playerName + " -> " + player.score)
-            //-     )
-            //- }
-
-            
-            //- if(entries != null) $('#entriesCount').html(data.entries.length)
-            //- if(players != null) $('#playersCount').html(data.players.length)
-
-            //- if(entries && players){
-            //-     if(entries.length >= players.length - 1 ) $('#endRound').addClass('btn-primary')
-            //-     else $('#endRound').removeClass('btn-primary')
-            //- }
-            
-            //- // state
-            //- if(data.state != null){
-            //-     if(data.state == "entry"){
-            //-         var help = (data.czar == uuid) ? "You are the Card Czar, you choose when to end the round" : "Pick the best white card to match the category."
-            //-         $("#feedback").html(help)
-            //-         $("#hand").show()
-            //-         $("#entries").hide()
-            //-     }
-            //-     if(data.state == "vote"){
-            //-         var help = (data.czar == uuid) ? "You are the Card Czar, pick your favorite entry." : "Wait for the Card Czar to choose their favorite."
-            //-         $("#feedback").html(help)
-            //-         $("#hand").hide()
-            //-         $("#entries").show()
-            //-     }
-            //- }
         })
 
         // Join the game
