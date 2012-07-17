@@ -1,4 +1,5 @@
 var twilio = require('./twiliorest.js')
+var apis = require('./apis.js')
 
 var fs = require('fs');
 var _ = require('underscore')
@@ -26,19 +27,47 @@ var wcards = []
 var names = []
 
 var init = function(cb){
+    fs.readFile('adjectives.txt', function(err, data) {
+        if(err) throw err;
+        bcards = _.shuffle(data.toString().split("\n"));
+        // Shuffle
+        newRound()
+    });
+
+
+    apis.guardian(function(err, data){
+        if(!err)
+            wcards = _.union(wcards, data)  
+        apis.rovi(function(err, data){
+            if(!err)
+                wcards = _.union(wcards, data)  
+            apis.espn(function(err, data){
+                if(!err)
+                    wcards = _.union(wcards, data) 
+                wcards = _.shuffle(wcards)
+            })
+
+        })
+
+    })
+
+    
+    
+
+
 	// read black cards, put into array
-	fs.readFile('bcards.txt', function(err, data) {
-	    if(err) throw err;
-	    bcards = _.shuffle(data.toString().split("\n"));
-	    // Shuffle
-	    newRound()
-	});
+	// fs.readFile('bcards.txt', function(err, data) {
+	//     if(err) throw err;
+	//     bcards = _.shuffle(data.toString().split("\n"));
+	//     // Shuffle
+	//     newRound()
+	// });
 
 	// read white cards, put into array
-	fs.readFile('wcards.txt', function(err, data) {
-	    if(err) throw err;
-	    wcards = _.shuffle(data.toString().split("\n"));
-	});
+	// fs.readFile('wcards.txt', function(err, data) {
+	//     if(err) throw err;
+	//     wcards = _.shuffle(data.toString().split("\n"));
+	// });
 
     fs.readFile('names.txt', function(err, data) {
         if(err) throw err;
