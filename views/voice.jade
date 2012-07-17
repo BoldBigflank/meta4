@@ -1,7 +1,10 @@
 Response
-	Say Hello
 	if state == 'entry'
 		//- The previous winner
+		if winner.name != ''
+			Say The last winner was #{winner.name}
+			Say #{winner.bcard}
+			Say #{winner.wcard}
 		//- Instructions
 		each player in players
 			if player.id != czar
@@ -10,8 +13,8 @@ Response
 		Play https://dl.dropbox.com/u/7776712/raincloud.mp3
 	if state == 'vote'
 		//- prod the czar by name
-		each players in players
+		each player in players
 			if player.id == czar
-				Say !{player.name}, vote for the best entry.
+				Say #{player.name}, vote for the best entry.
 		Play https://dl.dropbox.com/u/7776712/blue_blood.mp3
 	Play(loop='0') https://dl.dropbox.com/u/7776712/nyancatring.mp3

@@ -51,10 +51,6 @@ var init = function(cb){
 
     })
 
-    
-    
-
-
 	// read black cards, put into array
 	// fs.readFile('bcards.txt', function(err, data) {
 	//     if(err) throw err;
@@ -192,7 +188,7 @@ exports.deleteCall = function(callSid){
 }
 
 exports.setHost = function(h){
-    host = h
+    if(!host) host = h
 }
 exports.setName = function(id, name, cb){
     var p = _.find(game.players, function(player){ return player.id == id })
