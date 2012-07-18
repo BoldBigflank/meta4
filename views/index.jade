@@ -30,7 +30,7 @@ prepend content
                 li.span4
                     .thumbnail.bcard#bcard(data-bind="text: bcard.text")
                 li.span3
-                    .thumbnail.wcard 
+                    .thumbnail.wcard
                         .czar Czar: 
                             span#czarName(data-bind="text: czarObject().name") Czar
                         p
@@ -59,7 +59,7 @@ prepend content
         .hand(data-bind="visible: state() == 'entry'")
             ul.thumbnails#hand(data-bind="foreach: player().hand")
                 li(class="span3")
-                    div(class="thumbnail wcard", data-bind="text: $data, click: $parent.addEntry, css: { 'submitted' : _.indexOf($parent.entries(), $data) != -1 }")
+                    div(class="thumbnail wcard", data-bind="text: $data, click: $parent.addEntry, style: {'background-image': coords($data) }, css: { 'submitted' : _.indexOf($parent.entries(), $data) != -1}")
 
 
     script
@@ -67,6 +67,16 @@ prepend content
         var socket = io.connect('#');
         var alertInterval
         var viewModel = ko.mapping.fromJS(!{JSON.stringify(game)});
+        var coords = function(str){
+            var result = 10000000000
+            for (var i = 0; i < str.length; i++) {
+                result += parseInt(str.charCodeAt(i)*str.charCodeAt(i) + str.charCodeAt(i)*str.charCodeAt(i)*str.charCodeAt(i)*str.charCodeAt(i)*10000)
+            }
+            // 47.6097° N, 122.3331° W
+            var coords =  "47." + result.toString().substr(-10, 5) + ",-122." + result.toString().substr(-5, 5)
+
+            return "url('http://www.mapquestapi.com/staticmap/v3/getmap?key=Fmjtd%7Cluua20utnh%2Cbs%3Do5-967au6&size=400,400&zoom=7&type=map&center=" + coords + "')"
+        }
 
         viewModel.player = ko.computed( function(){
             return _.find( viewModel.players(), function(player){
