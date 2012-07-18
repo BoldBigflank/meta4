@@ -5,6 +5,7 @@ var fs = require('fs');
 var _ = require('underscore')
 var game = {
 	czar:null
+    , location: "http://www.mapquestapi.com/staticmap/v3/getmap?key=Fmjtd%7Cluua20utnh%2Cbs%3Do5-967au6&size=800,600&zoom=7&type=map&center=47.50513,-122.11048"
     , handCount: 10
 	, state:"entry"
     , bcard:{
@@ -192,6 +193,11 @@ exports.deleteCall = function(callSid){
 exports.setHost = function(h){
     if(!host) host = h
 }
+
+exports.setLocation = function(loc){
+    game.location = "http://www.mapquestapi.com/staticmap/v3/getplacemap?key=Fmjtd%7Cluua20utnh%2Cbs%3Do5-967au6&location=" + loc + "&size=800,600&type=map&zoom=7&imagetype=jpeg&showicon=green-1"
+}
+
 exports.setName = function(id, name, cb){
     var p = _.find(game.players, function(player){ return player.id == id })
     if(p) p.name = name

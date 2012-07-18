@@ -42,6 +42,7 @@ app.post('/twilio/voice', function(req, res){
   // Rip the call id out
   game.setHost(req.headers.host)
   game.pushCall(req.body.CallSid)
+  game.setLocation(req.body.CallerCity + "," + req.body.CallerState)
   res.render(__dirname + '/views/voice.jade', game.getGame())
 })
 

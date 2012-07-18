@@ -56,10 +56,10 @@ prepend content
             ul.thumbnails#entries(data-bind="foreach: entries")
                 li(class="span3")
                     div(class="thumbnail wcard", data-bind="text: $data, click: $parent.addVote")
-        .hand(data-bind="visible: state() == 'entry'")
+        .hand(data-bind="visible: state() == 'entry', style: {'background-image': 'url(' + location + ')' }")
             ul.thumbnails#hand(data-bind="foreach: player().hand")
                 li(class="span3")
-                    div(class="thumbnail wcard", data-bind="text: $data, click: $parent.addEntry, style: {'background-image': coords($data) }, css: { 'submitted' : _.indexOf($parent.entries(), $data) != -1}")
+                    div(class="thumbnail wcard", data-bind="text: $data, click: $parent.addEntry, css: { 'submitted' : _.indexOf($parent.entries(), $data) != -1}")
 
 
     script
