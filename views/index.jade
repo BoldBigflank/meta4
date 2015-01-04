@@ -67,21 +67,11 @@ prepend content
         var socket = io.connect('#');
         var alertInterval
         var viewModel = ko.mapping.fromJS(!{JSON.stringify(game)});
-        var coords = function(str){
-            var result = 10000000000
-            for (var i = 0; i < str.length; i++) {
-                result += parseInt(str.charCodeAt(i)*str.charCodeAt(i) + str.charCodeAt(i)*str.charCodeAt(i)*str.charCodeAt(i)*str.charCodeAt(i)*10000)
-            }
-            // 47.6097° N, 122.3331° W
-            var coords =  "47." + result.toString().substr(-10, 5) + ",-122." + result.toString().substr(-5, 5)
-
-            return "url('http://www.mapquestapi.com/staticmap/v3/getmap?key=Fmjtd%7Cluua20utnh%2Cbs%3Do5-967au6&size=400,400&zoom=7&type=map&center=" + coords + "')"
-        }
 
         viewModel.player = ko.computed( function(){
             return _.find( viewModel.players(), function(player){
                  return player.id() == uuid 
-             }) || {}
+              }) || {}
         })
 
         viewModel.czarObject = ko.computed( function(){
@@ -93,26 +83,26 @@ prepend content
         viewModel.addEntry = function(item){
             console.log("addEntry " , item)
             socket.emit('entry', item)
-        }
+        };
         viewModel.addVote = function(item){
             console.log("addVote", item)
             socket.emit('vote', item)
-        }
+        };
 
-        ko.applyBindings(viewModel);
+        ko.applyBindings(viewModel)
         
         $("#endRound").click(function(){
-            // Change the state of the game
+        //- Change the state of the game
             socket.emit("state", "vote")
         })
 
         $("#playerName").click(function(){
-            // Change the person's name
+        // Change the person's name
             socket.emit('name', prompt("Enter Your Name:", ""))
         })
 
         $("#brag").click(function(){
-            socket.emit('email', prompt("Who would you like to notify?", ""))
+        socket.emit('email', prompt("Who would you like to notify?", ""))
         })
 
         socket.on('alert', function(data){
